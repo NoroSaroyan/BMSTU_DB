@@ -1,5 +1,7 @@
-#include <iostream>
 #include "Student.h"
+#include "iostream"
+#include <iomanip>
+#include "array"
 
 using namespace std;
 
@@ -20,50 +22,56 @@ void addStudent() {
     border += 1;
 }
 
-int findLargestNameLength() {
-    int max = -1;
-    for (int i = 0; i < sizeof(students); ++i) {
-        if (sizeof(students[i].name) > max) {
-            max = sizeof(students[i].name);
-        }
-    }
-    return max;
-}
-
-int findLargestSurnameLength() {
-    int max = -1;
-    for (int i = 0; i < sizeof(students); ++i) {
-        if (sizeof(students[i].surname) > max) {
-            max = sizeof(students[i].surname);
-        }
-    }
-    return max;
-}
-
 void getAllStudents() {
-    cout << "Имя   фамилия   год рождения   год поступления      курс      группа\n";
-    for (auto &student: students) {
-        cout << student.name << " " << student.surname << "   " << student.birthYear << "           "
-             << student.entryYear << "                 "
-             << student.year << "         " << student.group << "\n";
+    // Find max length for each column
+    int maxLengths[6] = {sizeof("Name") - 1, sizeof("Surname") - 1, sizeof("Entry Year") - 1, sizeof("Birth Year") - 1,
+                         sizeof("Year") - 1, sizeof("Group") - 1};
+    for (int i = 0; i < size(students); i++) {
+        if (sizeof(students[i].name) > maxLengths[0]) maxLengths[0] = sizeof(students[i].name);
+        if (sizeof(students[i].surname) > maxLengths[1]) maxLengths[1] = sizeof(students[i].surname);
+        if (sizeof(students[i].entryYear) > maxLengths[2]) maxLengths[2] = sizeof(students[i].entryYear);
+        if (sizeof(students[i].birthYear) > maxLengths[3]) maxLengths[3] = sizeof(students[i].birthYear);
+        if (sizeof(students[i].year) > maxLengths[4]) maxLengths[4] = sizeof(students[i].year);
+        if (sizeof(students[i].group) > maxLengths[5]) maxLengths[5] = sizeof(students[i].group);
     }
 
-}
+    // Print header row
+    cout << "| " << left << setw(maxLengths[0]) << "Name" << " | ";
+    cout << left << setw(maxLengths[1]) << "Surname" << " | ";
+    cout << left << setw(maxLengths[2]) << "Entry Year" << " | ";
+    cout << left << setw(maxLengths[3]) << "Birth Year" << " | ";
+    cout << left << setw(maxLengths[4]) << "Year" << " | ";
+    cout << left << setw(maxLengths[5]) << "Group" << " |\n";
 
-void printCells() {
-    int rows = 10;
-    cout << "+\n";
-    int nameLen = findLargestNameLength();
-    int surnameLen = findLargestSurnameLength();
-    int birthYearLen, entryYearLen = 4;
-    int yearLen = 1;
-    int groupLen = 3;
-
-
-    for (int i = 0; i < rows * 2; ++i) {
-        cout << "|\n";
+    // Print separator row
+    for (int maxLength : maxLengths) {
+        cout << "+";
+        for (int j = 0; j < maxLength + 2; j++) {
+            cout << "-";
+        }
+        cout << "+";
     }
-    cout << "+";
+    cout << "\n";
+
+    // Print data rows
+    for (int i = 0; i < size(students); i++) {
+        cout << "| " << left << setw(maxLengths[0]) << students[i].name << " | ";
+        cout << left << setw(maxLengths[1]) << students[i].surname << " | ";
+        cout << left << setw(maxLengths[2]) << students[i].entryYear << " | ";
+        cout << left << setw(maxLengths[3]) << students[i].birthYear << " | ";
+        cout << left << setw(maxLengths[4]) << students[i].year << " | ";
+        cout << left << setw(maxLengths[5]) << students[i].group << " |\n";
+    }
+
+    // Print footer row
+    for (int maxLength : maxLengths) {
+        cout << "+";
+        for (int j = 0; j < maxLength + 2; j++) {
+            cout << "-";
+        }
+        cout << "+";
+    }
+    cout << "\n";
 }
 
 void showMenu() {
@@ -136,14 +144,13 @@ void menuHandler(short choice) {
 }
 
 int main() {
-//    while (true) {
-//        showMenu();
-//        short choice;
-//        cout << "Введите номер пункта меню: ";
-//        cin >> choice;
-//        menuHandler(choice);
-//    }
-    printCells();
+    while (true) {
+        showMenu();
+        short choice;
+        cout << "Введите номер пункта меню: ";
+        cin >> choice;
+        menuHandler(choice);
+    }
     return 0;
 }
 
