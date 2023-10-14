@@ -10,9 +10,9 @@ struct Student {
 
     char name[30]{};
     char surname[30]{};
-    short entryYear;
-    short birthYear;
-    unsigned short year;
+    short entryYear{};
+    short birthYear{};
+    unsigned short year{};
     char group[12]{};
 };
 

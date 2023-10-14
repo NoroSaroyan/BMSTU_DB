@@ -2,11 +2,35 @@
 #include "iostream"
 #include <iomanip>
 #include "array"
+#include <algorithm>
 
 using namespace std;
 
 Student students[50]{};
 int border = 0;
+
+int partition(Student *students, int low, int high, bool reversed) {
+    int pivot = students[high].birthYear;
+    int i = low - 1;
+
+    for (int j = low; j < high; ++j) {
+        if ((reversed && students[j].birthYear >= pivot) || (!reversed && students[j].birthYear <= pivot)) {
+            ++i;
+            swap(students[i], students[j]);
+        }
+    }
+
+    swap(students[i + 1], students[high]);
+    return i + 1;
+}
+
+void sortStudentsByAge(Student *students, int low, int high, bool reversed) {
+    if (low < high) {
+        int pivotIndex = partition(students, low, high, reversed);
+        sortStudentsByAge(students, low, pivotIndex - 1, reversed);
+        sortStudentsByAge(students, pivotIndex + 1, high, reversed);
+    }
+}
 
 void addStudent() {
     Student student{};
@@ -44,7 +68,7 @@ void getAllStudents() {
     cout << left << setw(maxLengths[5]) << "Group" << " |\n";
 
     // Print separator row
-    for (int maxLength : maxLengths) {
+    for (int maxLength: maxLengths) {
         cout << "+";
         for (int j = 0; j < maxLength + 2; j++) {
             cout << "-";
@@ -64,7 +88,7 @@ void getAllStudents() {
     }
 
     // Print footer row
-    for (int maxLength : maxLengths) {
+    for (int maxLength: maxLengths) {
         cout << "+";
         for (int j = 0; j < maxLength + 2; j++) {
             cout << "-";
@@ -76,6 +100,7 @@ void getAllStudents() {
 
 void showMenu() {
     cout << "Для выбора введите номер пункта \n\n";
+    cout << "0. Вывод по запросу \n";
     cout << "1.Ввод информации \n";
     cout << "2.Ввод информации из существующего текстового файла \n";
     cout << "3.Ввод информации из существующего бинарного файла \n";
@@ -92,9 +117,21 @@ void showMenu() {
     cout << "\n";
 }
 
+
+// Запрос: фамилии и группы 2 наиболее младших по ворасту
+void request() {
+    sortStudentsByAge(students, 0, (sizeof(students) / sizeof(students[0])) - 1, true);
+    cout << students[0].surname << "" <<students[0].birthYear;
+    cout << students[1].surname << students[2].birthYear;
+}
+
 void menuHandler(short choice) {
 
     switch (choice) {
+        case 0:
+            cout << "Вывод по запрос";
+
+            break;
         case 1:
             cout << "Ввод информации";
             break;
@@ -144,13 +181,32 @@ void menuHandler(short choice) {
 }
 
 int main() {
-    while (true) {
-        showMenu();
-        short choice;
-        cout << "Введите номер пункта меню: ";
-        cin >> choice;
-        menuHandler(choice);
+
+//    while (true) {
+//        showMenu();
+//        short choice;
+//        cout << "Введите номер пункта меню: ";
+//        cin >> choice;
+//        menuHandler(choice);
+//    }
+
+    Student studs[5]{};
+    studs[0] = {"Norik", "Saroyan", 2023, 2004, 1, "13b"};
+    studs[1] = {"Artur", "Alaverdyan", 2023, 2001, 1, "13b"};
+    studs[2] = {"Rjrj", "rjrjei3rj", 2023, 2000, 1, "13b"};
+    studs[3] = {"rjrjrj", "rjrjei4", 2023, 2005, 1, "13b"};
+    studs[4] = {"wokrk", "wijt4", 2023, 2004, 1, "13b"};
+
+    int numStudents = sizeof(studs) / sizeof(studs[0]);
+    sortStudentsByAge(studs, 0, numStudents - 1, true);
+
+    for (int i = 0; i < numStudents; ++i) {
+        cout << studs[i].name << " " << studs[i].birthYear << "\n";
     }
+    cout << "\n\n";
+    cout << studs[0].surname << "  " << studs[0].birthYear << "\n";
+    cout << studs[1].surname << "  " << studs[1].birthYear;
+
     return 0;
 }
 
