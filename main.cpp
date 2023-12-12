@@ -6,18 +6,9 @@
 
 using namespace std;
 
-Student *students = new Student[1000];
-int border = sizeof(students) / sizeof(students[0]);
-
-void save();
-
 void checkSize();
 
 void changeSize();
-
-int partition(Student *students, int low, int high, bool reversed);
-
-void sortStudentsByAge(Student *students, int low, int high, bool reversed);
 
 void addStudent();
 
@@ -33,6 +24,28 @@ void menuHandler(short choice);
 
 void updateStudent();
 
+void textToBinary();
+
+void writeStudentsToTextFile();
+
+void writeStudentsToBinaryFile();
+
+void readStudentsFromTextFile();
+
+void readStudentsFromBinaryFile();
+
+bool compareStudents(const Student &a, const Student &b, int field, bool ascending);
+
+void quicksort(int left, int right, int field, bool ascending);
+
+void sortStudentsByAge(int low, int high, bool reversed);
+
+int partition(int low, int high, bool reversed);
+
+Student *students = new Student[1000];
+int border = sizeof(students) / sizeof(students[0]);
+
+//todo: протестировать
 void textToBinary() {
     char textFileName[256];
     char binaryFileName[256];
@@ -74,6 +87,7 @@ void textToBinary() {
     outputFile.close();
 }
 
+//todo: протестировать
 void writeStudentsToTextFile() {
     char filename[256];
     std::cout << "Введите название текстового файла: ";
@@ -97,6 +111,7 @@ void writeStudentsToTextFile() {
     outputFile.close();
 }
 
+//todo: протестировать
 void writeStudentsToBinaryFile() {
     char filename[256];
     std::cout << "Введите название двочного файла: ";
@@ -114,6 +129,7 @@ void writeStudentsToBinaryFile() {
     outputFile.close();
 }
 
+//todo: протестировать
 void readStudentsFromTextFile() {
     char filename[256];
     std::cout << "Введите имя текстового файла: ";
@@ -136,6 +152,7 @@ void readStudentsFromTextFile() {
     inputFile.close();
 }
 
+//todo: протестировать
 void readStudentsFromBinaryFile() {
     char filename[256];
     std::cout << "Введите название двочного файла: ";
@@ -157,7 +174,7 @@ void readStudentsFromBinaryFile() {
     inputFile.close();
 }
 
-
+//todo: протестировать
 bool compareStudents(const Student &a, const Student &b, int field, bool ascending) {
     switch (field) {
         case 1:
@@ -179,7 +196,7 @@ bool compareStudents(const Student &a, const Student &b, int field, bool ascendi
     return false;  // Default case (field not recognized)
 }
 
-// Quicksort algorithm
+//todo: протестировать
 void quicksort(int left, int right, int field, bool ascending) {
     int i = left, j = right;
     Student pivot = students[(left + right) / 2];
@@ -210,7 +227,6 @@ void quicksort(int left, int right, int field, bool ascending) {
     }
 }
 
-
 //работает
 int partition(int low, int high, bool reversed) {
     int pivot = students[high].birthYear;
@@ -235,6 +251,8 @@ void sortStudentsByAge(int low, int high, bool reversed) {
     }
 }
 
+//работает
+//todo: фунцкия должна принимать кириллицу
 void addStudent() {
     Student student{};
     std::cout
@@ -317,6 +335,8 @@ void addStudent() {
     border += 1;
 }
 
+//работает
+//todo: фунцкия должна принимать кириллицу
 void updateStudent() {
     char id[20];
     std::cout << "Введите ID студента, которого вы хотите обновить: ";
@@ -349,11 +369,11 @@ void updateStudent() {
                     std::cin >> students[i].year;
                 } else if (strcmp(field, "group") == 0) {
                     std::cout << "Введите новую группу: ";
-                    std::cin.ignore(); // Ignore the newline character
+                    std::cin.ignore();
                     std::cin.getline(students[i].group, 12);
                 } else if (strcmp(field, "id") == 0) {
                     std::cout << "Введите новый ID: ";
-                    std::cin.ignore(); // Ignore the newline character
+                    std::cin.ignore();
                     std::cin.getline(students[i].id, 20);
                 }
 
@@ -423,6 +443,7 @@ void changeSize() {
 }
 
 //работает
+//todo: поменять вывод на русский, перенос строки
 void getAllStudents() {
     // Find max length for each column
     int maxLengths[7] = {sizeof("Name") - 1, sizeof("Surname") - 1, sizeof("Entry Year") - 1, sizeof("Birth Year") - 1,
@@ -478,7 +499,6 @@ void getAllStudents() {
     cout << "\n";
 }
 
-
 //Запрос: Получить фамилии и группы двух самых молодых студентов по возрасту
 // работает
 void request() {
@@ -488,6 +508,7 @@ void request() {
 }
 
 //работает
+//todo: удалить лишние пунткы меню
 void showMenu() {
     cout << "Введите номер пункта меню:\n\n";
     cout << "0. Ввести информацию\n";
@@ -508,6 +529,7 @@ void showMenu() {
 }
 
 //работает
+//todo: удалить лишние пунткы меню, пункт 11
 void menuHandler(short choice) {
     switch (choice) {
         case 0:
@@ -554,8 +576,6 @@ void menuHandler(short choice) {
             break;
         case 11:
             cout << "Сортировать по любому полю\n";
-//            добавить сортировку по любому полю
-
             break;
         case 12:
             cout << "Выход\n";
@@ -571,7 +591,6 @@ void menuHandler(short choice) {
 
 int main() {
     while (true) {
-
         showMenu();
         short choice;
         cout << "Введите номер пункта меню: ";
