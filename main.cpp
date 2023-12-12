@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -32,31 +33,183 @@ void menuHandler(short choice);
 
 void updateStudent();
 
-//template<class T>
-//T getValue(Student *student, char *field) {
-//    if (field == "name") {
-//        return student->name;
-//    } else if (field == "surname") {
-//        return student->surname;
-//    } else if (field == "birthYear") {
-//        return student->birthYear;
-//    } else if (field == "entryYear") {
-//        return student->entryYear;
-//    } else if (field == "year") {
-//        return student->year;
-//    } else if (field == "group") {
-//        return student->group;
-//    } else if (field == "id") {
-//        return student->id;
-//    }
-//    return nullptr;
-//}
+void textToBinary() {
+    char textFileName[256];
+    char binaryFileName[256];
 
-//void sortByField() {
-//    char field[20];
-//    byte reversed;
-//    getValue(students[0], "surname");
-//}
+    std::cout << "Введите имя текстового файла: ";
+    std::cin >> textFileName;
+
+    std::cout << "Введите имя двоичного файла: ";
+    std::cin >> binaryFileName;
+
+    std::ifstream inputFile(textFileName);
+    std::ofstream outputFile(binaryFileName, std::ios::binary);
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Ошибка открытия текстового файла: " << textFileName << std::endl;
+        return;
+    }
+
+    if (!outputFile.is_open()) {
+        std::cerr << "Ошибка открытия бинарного файла: " << binaryFileName << std::endl;
+        inputFile.close();
+        return;
+    }
+
+    while (inputFile >> students[border].name >> students[border].surname
+                     >> students[border].entryYear >> students[border].birthYear
+                     >> students[border].year >> students[border].group
+                     >> students[border].id) {
+        border++; // Переход к следующему слоту в массиве
+        if (border >= 1000) {
+            break; // Избегаем переполнения буфера
+        }
+    }
+
+    // Записываем весь массив в бинарный файл
+    outputFile.write(reinterpret_cast<char *>(students), border * sizeof(Student));
+
+    inputFile.close();
+    outputFile.close();
+}
+
+void writeStudentsToTextFile() {
+    char filename[256];
+    std::cout << "Введите название текстового файла: ";
+    std::cin >> filename;
+
+    std::ofstream outputFile(filename);
+
+    if (!outputFile.is_open()) {
+        std::cerr << "Ошибка с файлом: " << filename << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < border; ++i) {
+        // Write student information to the text file
+        outputFile << students[i].name << ' ' << students[i].surname << ' '
+                   << students[i].entryYear << ' ' << students[i].birthYear << ' '
+                   << students[i].year << ' ' << students[i].group << ' '
+                   << students[i].id << std::endl;
+    }
+
+    outputFile.close();
+}
+
+void writeStudentsToBinaryFile() {
+    char filename[256];
+    std::cout << "Введите название двочного файла: ";
+    std::cin >> filename;
+
+    std::ofstream outputFile(filename, std::ios::binary);
+
+    if (!outputFile.is_open()) {
+        std::cerr << "Ошибка: " << filename << std::endl;
+        return;
+    }
+
+    outputFile.write(reinterpret_cast<char *>(students), border * sizeof(Student));
+
+    outputFile.close();
+}
+
+void readStudentsFromTextFile() {
+    char filename[256];
+    std::cout << "Введите имя текстового файла: ";
+    std::cin >> filename;
+
+    std::ifstream inputFile(filename);
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Ошибка: " << filename << std::endl;
+        return;
+    }
+
+    while (inputFile >> students[border].name >> students[border].surname
+                     >> students[border].entryYear >> students[border].birthYear
+                     >> students[border].year >> students[border].group
+                     >> students[border].id) {
+        border++; // Move to the next slot in the array
+        checkSize();
+    }
+    inputFile.close();
+}
+
+void readStudentsFromBinaryFile() {
+    char filename[256];
+    std::cout << "Введите название двочного файла: ";
+    std::cin >> filename;
+
+    std::ifstream inputFile(filename, std::ios::binary);
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Ошибка: " << filename << std::endl;
+        return;
+    }
+
+    // Read the entire array from the binary file
+    inputFile.read(reinterpret_cast<char *>(students), border * sizeof(Student));
+
+    // Calculate the new size based on the number of bytes read
+    border = inputFile.gcount() / sizeof(Student);
+
+    inputFile.close();
+}
+
+
+bool compareStudents(const Student &a, const Student &b, int field, bool ascending) {
+    switch (field) {
+        case 1:
+            return (ascending) ? (std::strcmp(a.name, b.name) < 0) : (std::strcmp(a.name, b.name) > 0);
+        case 2:
+            return (ascending) ? (std::strcmp(a.surname, b.surname) < 0) : (std::strcmp(a.surname, b.surname) > 0);
+        case 3:
+            return (ascending) ? (a.entryYear < b.entryYear) : (a.entryYear > b.entryYear);
+        case 4:
+            return (ascending) ? (a.birthYear < b.birthYear) : (a.birthYear > b.birthYear);
+        case 5:
+            return (ascending) ? (a.year < b.year) : (a.year > b.year);
+        case 6:
+            return (ascending) ? (std::strcmp(a.group, b.group) < 0) : (std::strcmp(a.group, b.group) > 0);
+        case 7:
+            return (ascending) ? (std::strcmp(a.id, b.id) < 0) : (std::strcmp(a.id, b.id) > 0);
+    }
+
+    return false;  // Default case (field not recognized)
+}
+
+// Quicksort algorithm
+void quicksort(int left, int right, int field, bool ascending) {
+    int i = left, j = right;
+    Student pivot = students[(left + right) / 2];
+
+    while (i <= j) {
+        while (compareStudents(students[i], pivot, field, ascending)) {
+            i++;
+        }
+
+        while (compareStudents(pivot, students[j], field, ascending)) {
+            j--;
+        }
+
+        if (i <= j) {
+            // Swap elements at i and j
+            std::swap(students[i], students[j]);
+            i++;
+            j--;
+        }
+    }
+
+    // Recursive calls
+    if (left < j) {
+        quicksort(left, j, field, ascending);
+    }
+    if (i < right) {
+        quicksort(i, right, field, ascending);
+    }
+}
+
 
 //работает
 int partition(int low, int high, bool reversed) {
@@ -362,25 +515,30 @@ void menuHandler(short choice) {
             break;
         case 1:
             cout << "Ввести информацию из существующего текстового файла\n";
+            readStudentsFromTextFile();
             break;
         case 2:
             cout << "Ввести информацию из существующего двоичного файла\n";
+            readStudentsFromBinaryFile();
             break;
         case 3:
             cout << "Отобразить данные\n";
             getAllStudents();
             break;
         case 4:
-            cout << "Вывести данные в файл\n";
+            cout << "Вывести данные в бинарный файл\n";
+            writeStudentsToBinaryFile();
             break;
         case 5:
             cout << "Распечатать информацию\n";
             break;
         case 6:
-            cout << "Преобразовать базу данных в файл\n";
+            cout << "Преобразовать базу данных в текстовый файл\n";
+            writeStudentsToTextFile();
             break;
         case 7:
             cout << "Преобразовать содержимое текстового файла в двоичный файл\n";
+            textToBinary();
             break;
         case 8:
             cout << "Добавить запись\n";
@@ -396,7 +554,8 @@ void menuHandler(short choice) {
             break;
         case 11:
             cout << "Сортировать по любому полю\n";
-//            cout << getValue(students[0], "name");
+//            добавить сортировку по любому полю
+
             break;
         case 12:
             cout << "Выход\n";
@@ -412,6 +571,7 @@ void menuHandler(short choice) {
 
 int main() {
     while (true) {
+
         showMenu();
         short choice;
         cout << "Введите номер пункта меню: ";
