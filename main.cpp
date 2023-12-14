@@ -45,49 +45,7 @@ int partition(int low, int high, bool reversed);
 Student *students = new Student[1000];
 int border = sizeof(students) / sizeof(students[0]);
 
-//todo: протестировать
-void textToBinary() {
-    char textFileName[256];
-    char binaryFileName[256];
-
-    std::cout << "Введите имя текстового файла: ";
-    std::cin >> textFileName;
-
-    std::cout << "Введите имя двоичного файла: ";
-    std::cin >> binaryFileName;
-
-    std::ifstream inputFile(textFileName);
-    std::ofstream outputFile(binaryFileName, std::ios::binary);
-
-    if (!inputFile.is_open()) {
-        std::cerr << "Ошибка открытия текстового файла: " << textFileName << std::endl;
-        return;
-    }
-
-    if (!outputFile.is_open()) {
-        std::cerr << "Ошибка открытия бинарного файла: " << binaryFileName << std::endl;
-        inputFile.close();
-        return;
-    }
-
-    while (inputFile >> students[border].name >> students[border].surname
-                     >> students[border].entryYear >> students[border].birthYear
-                     >> students[border].year >> students[border].group
-                     >> students[border].id) {
-        border++; // Переход к следующему слоту в массиве
-        if (border >= 1000) {
-            break; // Избегаем переполнения буфера
-        }
-    }
-
-    // Записываем весь массив в бинарный файл
-    outputFile.write(reinterpret_cast<char *>(students), border * sizeof(Student));
-
-    inputFile.close();
-    outputFile.close();
-}
-
-//todo: протестировать
+//работает
 void writeStudentsToTextFile() {
     char filename[256];
     std::cout << "Введите название текстового файла: ";
@@ -101,7 +59,6 @@ void writeStudentsToTextFile() {
     }
 
     for (int i = 0; i < border; ++i) {
-        // Write student information to the text file
         outputFile << students[i].name << ' ' << students[i].surname << ' '
                    << students[i].entryYear << ' ' << students[i].birthYear << ' '
                    << students[i].year << ' ' << students[i].group << ' '
@@ -111,7 +68,7 @@ void writeStudentsToTextFile() {
     outputFile.close();
 }
 
-//todo: протестировать
+//todo: протестировать, понять, почему не работает обратная функция
 void writeStudentsToBinaryFile() {
     char filename[256];
     std::cout << "Введите название двочного файла: ";
@@ -129,7 +86,7 @@ void writeStudentsToBinaryFile() {
     outputFile.close();
 }
 
-//todo: протестировать
+//работает
 void readStudentsFromTextFile() {
     char filename[256];
     std::cout << "Введите имя текстового файла: ";
@@ -146,13 +103,13 @@ void readStudentsFromTextFile() {
                      >> students[border].entryYear >> students[border].birthYear
                      >> students[border].year >> students[border].group
                      >> students[border].id) {
-        border++; // Move to the next slot in the array
+        border++;
         checkSize();
     }
     inputFile.close();
 }
 
-//todo: протестировать
+//todo: не работает, критично!!!
 void readStudentsFromBinaryFile() {
     char filename[256];
     std::cout << "Введите название двочного файла: ";
@@ -165,10 +122,7 @@ void readStudentsFromBinaryFile() {
         return;
     }
 
-    // Read the entire array from the binary file
     inputFile.read(reinterpret_cast<char *>(students), border * sizeof(Student));
-
-    // Calculate the new size based on the number of bytes read
     border = inputFile.gcount() / sizeof(Student);
 
     inputFile.close();
@@ -193,7 +147,7 @@ bool compareStudents(const Student &a, const Student &b, int field, bool ascendi
             return (ascending) ? (std::strcmp(a.id, b.id) < 0) : (std::strcmp(a.id, b.id) > 0);
     }
 
-    return false;  // Default case (field not recognized)
+    return false;
 }
 
 //todo: протестировать
@@ -205,20 +159,16 @@ void quicksort(int left, int right, int field, bool ascending) {
         while (compareStudents(students[i], pivot, field, ascending)) {
             i++;
         }
-
         while (compareStudents(pivot, students[j], field, ascending)) {
             j--;
         }
-
         if (i <= j) {
-            // Swap elements at i and j
             std::swap(students[i], students[j]);
             i++;
             j--;
         }
     }
 
-    // Recursive calls
     if (left < j) {
         quicksort(left, j, field, ascending);
     }
@@ -420,14 +370,12 @@ void deleteStudent() {
     }
 
 }
-
 //работает
 void checkSize() {
     if (border == sizeof(&students)) {
         changeSize();
     }
 }
-
 //работает
 void changeSize() {
     int length = (border + 1) * 2;
@@ -508,7 +456,6 @@ void request() {
 }
 
 //работает
-//todo: удалить лишние пунткы меню
 void showMenu() {
     cout << "Введите номер пункта меню:\n\n";
     cout << "0. Ввести информацию\n";
@@ -529,7 +476,6 @@ void showMenu() {
 }
 
 //работает
-//todo: удалить лишние пунткы меню, пункт 11
 void menuHandler(short choice) {
     switch (choice) {
         case 0:
