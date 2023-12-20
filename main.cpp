@@ -1,183 +1,170 @@
-#include "Student.h"
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <fstream>
+#include "op_headers.h"
 
-using namespace std;
-
-void checkSize();
-
-void changeSize();
-
-void addStudent();
-
-void getAllStudents();
-
-void request();
-
-void showMenu();
-
-void deleteStudent();
-
-void menuHandler(short choice);
-
-void updateStudent();
-
-void textToBinary();
-
-void writeStudentsToTextFile();
-
-void writeStudentsToBinaryFile();
-
-void readStudentsFromTextFile();
-
-void readStudentsFromBinaryFile();
-
-bool compareStudents(const Student &a, const Student &b, int field, bool ascending);
-
-void quicksort(int left, int right, int field, bool ascending);
-
-void sortStudentsByAge(int low, int high, bool reversed);
-
-int partition(int low, int high, bool reversed);
-
-Student *students = new Student[1000];
+Student *students = new Student[10000];
 int border = sizeof(students) / sizeof(students[0]);
 
-//работает
 void writeStudentsToTextFile() {
     char filename[256];
-    std::cout << "Введите название текстового файла: ";
-    std::cin >> filename;
+    cout << "Введите название текстового файла: ";
+    cin >> filename;
 
-    std::ofstream outputFile(filename);
+    ofstream out(filename);
 
-    if (!outputFile.is_open()) {
-        std::cerr << "Ошибка с файлом: " << filename << std::endl;
+    if (!out.is_open()) {
+        cerr << "Ошибка с файлом: " << filename << endl;
         return;
     }
 
     for (int i = 0; i < border; ++i) {
-        outputFile << students[i].name << ' ' << students[i].surname << ' '
-                   << students[i].entryYear << ' ' << students[i].birthYear << ' '
-                   << students[i].year << ' ' << students[i].group << ' '
-                   << students[i].id << std::endl;
+        out << students[i].name << ' ' << students[i].surname << ' '
+            << students[i].entryYear << ' ' << students[i].birthYear << ' '
+            << students[i].year << ' ' << students[i].group << ' '
+            << students[i].id << endl;
     }
-
-    outputFile.close();
+    out.close();
 }
 
-//todo: протестировать, понять, почему не работает обратная функция
 void writeStudentsToBinaryFile() {
-    char filename[256];
-    std::cout << "Введите название двочного файла: ";
-    std::cin >> filename;
-
-    std::ofstream outputFile(filename, std::ios::binary);
-
-    if (!outputFile.is_open()) {
-        std::cerr << "Ошибка: " << filename << std::endl;
-        return;
+    char filename[200];
+    cin >> filename;
+    ofstream out(filename, ios::binary);
+    if (out.is_open()) {
+        for (int i = 0; i < border; ++i) {
+            out.write((char *) &students[i], sizeof(Student));
+        }
+    } else {
+        cout << "ошибка";
     }
-
-    outputFile.write(reinterpret_cast<char *>(students), border * sizeof(Student));
-
-    outputFile.close();
+    out.close();
 }
 
-//работает
 void readStudentsFromTextFile() {
     char filename[256];
-    std::cout << "Введите имя текстового файла: ";
-    std::cin >> filename;
+    cout << "Введите имя текстового файла: ";
+    cin >> filename;
 
-    std::ifstream inputFile(filename);
+    ifstream in(filename);
 
-    if (!inputFile.is_open()) {
-        std::cerr << "Ошибка: " << filename << std::endl;
+    if (!in.is_open()) {
+        cerr << "Ошибка: " << filename << endl;
         return;
     }
 
-    while (inputFile >> students[border].name >> students[border].surname
-                     >> students[border].entryYear >> students[border].birthYear
-                     >> students[border].year >> students[border].group
-                     >> students[border].id) {
+    while (in >> students[border].name >> students[border].surname
+              >> students[border].entryYear >> students[border].birthYear
+              >> students[border].year >> students[border].group
+              >> students[border].id) {
         border++;
         checkSize();
     }
-    inputFile.close();
+    in.close();
 }
 
-//todo: не работает, критично!!!
 void readStudentsFromBinaryFile() {
-    char filename[256];
-    std::cout << "Введите название двочного файла: ";
-    std::cin >> filename;
+    char fileName[256];
+    cout << "Введите название двочного файла: ";
+    cin >> fileName;
 
-    std::ifstream inputFile(filename, std::ios::binary);
-
-    if (!inputFile.is_open()) {
-        std::cerr << "Ошибка: " << filename << std::endl;
-        return;
+    ifstream in(fileName, ios::binary);
+    if (in.is_open()) {
+        Student temp{};
+        cout << "data from file:\n";
+        while (in.read((char *) &temp, sizeof(Student))) {
+            students[border] = temp;
+            border++;
+            checkSize();
+        }
     }
-
-    inputFile.read(reinterpret_cast<char *>(students), border * sizeof(Student));
-    border = inputFile.gcount() / sizeof(Student);
-
-    inputFile.close();
+    in.close();
 }
 
-//todo: протестировать
-bool compareStudents(const Student &a, const Student &b, int field, bool ascending) {
-    switch (field) {
+void convertTxtToBin() {
+    char txtFileName[200];
+    char binFileName[200];
+    cout << "Введите название текстового файла(без .txt): ";
+    cin >> txtFileName;
+    cout << "Введите название бинарного файла(.bin в конце):";
+    cin >> binFileName;
+    ifstream in(txtFileName);
+    ofstream out(binFileName, ios::binary);
+    Student temp{};
+    while (in >> temp.name >> temp.surname >> temp.entryYear >> temp.birthYear >> temp.year >> temp.group >> temp.id) {
+        out.write((char *) &temp, sizeof(Student));
+    }
+    in.close();
+    out.close();
+}
+
+bool compareStudents(const Student &a, const Student &b, int choice, bool reversed) {
+    switch (choice) {
         case 1:
-            return (ascending) ? (std::strcmp(a.name, b.name) < 0) : (std::strcmp(a.name, b.name) > 0);
+            return (reversed ? std::strcmp(b.name, a.name) : std::strcmp(a.name, b.name)) < 0;
         case 2:
-            return (ascending) ? (std::strcmp(a.surname, b.surname) < 0) : (std::strcmp(a.surname, b.surname) > 0);
+            return (reversed ? std::strcmp(b.surname, a.surname) : std::strcmp(a.surname, b.surname)) < 0;
         case 3:
-            return (ascending) ? (a.entryYear < b.entryYear) : (a.entryYear > b.entryYear);
+            return (reversed ? b.entryYear < a.entryYear : a.entryYear < b.entryYear);
         case 4:
-            return (ascending) ? (a.birthYear < b.birthYear) : (a.birthYear > b.birthYear);
+            return (reversed ? b.birthYear < a.birthYear : a.birthYear < b.birthYear);
         case 5:
-            return (ascending) ? (a.year < b.year) : (a.year > b.year);
+            return (reversed ? b.year < a.year : a.year < b.year);
         case 6:
-            return (ascending) ? (std::strcmp(a.group, b.group) < 0) : (std::strcmp(a.group, b.group) > 0);
+            return (reversed ? std::strcmp(b.group, a.group) : std::strcmp(a.group, b.group)) < 0;
         case 7:
-            return (ascending) ? (std::strcmp(a.id, b.id) < 0) : (std::strcmp(a.id, b.id) > 0);
-    }
-
-    return false;
-}
-
-//todo: протестировать
-void quicksort(int left, int right, int field, bool ascending) {
-    int i = left, j = right;
-    Student pivot = students[(left + right) / 2];
-
-    while (i <= j) {
-        while (compareStudents(students[i], pivot, field, ascending)) {
-            i++;
-        }
-        while (compareStudents(pivot, students[j], field, ascending)) {
-            j--;
-        }
-        if (i <= j) {
-            std::swap(students[i], students[j]);
-            i++;
-            j--;
-        }
-    }
-
-    if (left < j) {
-        quicksort(left, j, field, ascending);
-    }
-    if (i < right) {
-        quicksort(i, right, field, ascending);
+            return (reversed ? std::strcmp(b.id, a.id) : std::strcmp(a.id, b.id)) < 0;
+        default:
+            std::cout << "Неправильный выбор";
+            return false;
     }
 }
 
-//работает
+void swapStudents(Student &a, Student &b) {
+    Student temp = a;
+    a = b;
+    b = temp;
+}
+
+void sortStudents(Student *students, int length, int choice, bool reversed) {
+    for (int i = 0; i < length - 1; ++i) {
+        for (int j = 0; j < length - i - 1; ++j) {
+            if (compareStudents(students[j], students[j + 1], choice, reversed)) {
+                swapStudents(students[j], students[j + 1]);
+            }
+        }
+    }
+}
+
+void printSortMenu() {
+    int choice;
+    int ascending;
+    bool reversed = false;
+    cout
+            << "1-имя \n 2-фамилия\n 3-год поступления \n 4- год рождения \n 5- курс\n 6- группа \n 7- номер студенческого билета \n если хотите отменить операцию, введите 0 "
+            << endl;
+    cout << "Выберите поле, по которому хотите сортировать список: ";
+    cin >> choice;
+    if (choice > 7 || choice <= 0) {
+        if (choice == 0) {
+            return;
+        }
+        cout << "Вы выбрали несуществующий пункт, попробуйте еще раз: ";
+        cin >> choice;
+        cout << endl;
+    }
+    cout << "Введите 1, для сортировки в порядке возрастания и -1 для убывания: ";
+    cin >> ascending;
+    if (ascending == 0) {
+        return;
+    } else if (ascending == 1) {
+        reversed = true;
+    } else if (ascending == -1) {
+        reversed = false;
+    } else {
+        cout << "Вы выбрали несуществующий пункт, попробуйте еще раз: ";
+        cin >> ascending;
+    }
+    sortStudents(students, border, choice, reversed);
+}
+
 int partition(int low, int high, bool reversed) {
     int pivot = students[high].birthYear;
     int i = low;
@@ -192,7 +179,6 @@ int partition(int low, int high, bool reversed) {
     return i;
 }
 
-//работает
 void sortStudentsByAge(int low, int high, bool reversed) {
     if (low < high) {
         int pivotIndex = partition(low, high, reversed);
@@ -201,15 +187,11 @@ void sortStudentsByAge(int low, int high, bool reversed) {
     }
 }
 
-//работает
-//todo: фунцкия должна принимать кириллицу
 void addStudent() {
     Student student{};
-    std::cout
-            << "Введите имя, фамилию, год рождения, год поступления, курс и группу студента (разделенные пробелами):\n";
-
     while (true) {
-        std::cin >> setw(30) >> student.name;
+        cout << "введите имя" << endl;
+        cin >> setw(30) >> student.name;
         if (cin.fail()) {
             cerr << "Ошибка: неверный формат имени. Попробуйте еще раз.\n";
             cin.clear();
@@ -219,6 +201,7 @@ void addStudent() {
         }
     }
     while (true) {
+        cout << "Введите фамилию" << endl;
         cin >> setw(30) >> student.surname;
         if (cin.fail()) {
             cerr << "Ошибка: неверный формат фамилии. Попробуйте еще раз.\n";
@@ -229,6 +212,7 @@ void addStudent() {
         }
     }
     while (true) {
+        cout << "Введите Ггд рождения" << endl;
         cin >> student.birthYear;
         if (cin.fail() || student.birthYear < 1975 || student.birthYear > 2007) {
             cerr
@@ -240,6 +224,7 @@ void addStudent() {
         }
     }
     while (true) {
+        cout << "Введите год поступления" << endl;
         cin >> student.entryYear;
         if (cin.fail() || student.entryYear < 2000 || student.entryYear > 2023) {
             cerr
@@ -251,6 +236,7 @@ void addStudent() {
         }
     }
     while (true) {
+        cout << "Введите курс(1-6)" << endl;
         cin >> student.year;
         if (cin.fail() || student.year < 1 || student.year > 6) {
             cerr << "Ошибка: неверный формат курса. Курс должен быть в диапазоне от 1 до 6. Попробуйте еще раз.\n";
@@ -261,6 +247,7 @@ void addStudent() {
         }
     }
     while (true) {
+        cout << "Введите группу" << endl;
         cin >> setw(12) >> student.group;
         if (cin.fail()) {
             cerr << "Ошибка: неверный формат группы. Попробуйте еще раз.\n";
@@ -271,6 +258,7 @@ void addStudent() {
         }
     }
     while (true) {
+        cout << "Введите номер студенческого билета" << endl;
         cin >> setw(20) >> student.id;
         if (cin.fail()) {
             cerr << "Ошибка: неверный формат номера зачетника. Попробуйте еще раз.\n";
@@ -285,46 +273,44 @@ void addStudent() {
     border += 1;
 }
 
-//работает
-//todo: фунцкия должна принимать кириллицу
 void updateStudent() {
     char id[20];
-    std::cout << "Введите ID студента, которого вы хотите обновить: ";
-    std::cin >> id;
+    cout << "Введите ID студента, которого вы хотите обновить: ";
+    cin >> id;
 
     for (int i = 0; i < border; ++i) {
         if (strcmp(students[i].id, id) == 0) {
-            std::cout << "Список названии полей(убедитесь, что правильно написали названия полей)\n";
-            std::cout << "name, surname, entryYear, birthYear, year, group, id\n";
-            std::cout << "Введите поля, которые вы хотите обновить (через запятую): ";
+            cout << "Список названии полей(убедитесь, что правильно написали названия полей)\n";
+            cout << "name, surname, entryYear, birthYear, year, group, id\n";
+            cout << "Введите поля, которые вы хотите обновить (через запятую): ";
             char fields[100];
-            std::cin >> fields;
+            cin >> fields;
 
             char *field = strtok(fields, ",");
             while (field != nullptr) {
                 if (strcmp(field, "name") == 0) {
-                    std::cout << "Введите новое имя: ";
-                    std::cin >> students[i].name;
+                    cout << "Введите новое имя: ";
+                    cin >> students[i].name;
                 } else if (strcmp(field, "surname") == 0) {
-                    std::cout << "Введите новую фамилию: ";
-                    std::cin >> students[i].surname;
+                    cout << "Введите новую фамилию: ";
+                    cin >> students[i].surname;
                 } else if (strcmp(field, "entryYear") == 0) {
-                    std::cout << "Введите новый год поступления: ";
-                    std::cin >> students[i].entryYear;
+                    cout << "Введите новый год поступления: ";
+                    cin >> students[i].entryYear;
                 } else if (strcmp(field, "birthYear") == 0) {
-                    std::cout << "Введите новый год рождения: ";
-                    std::cin >> students[i].birthYear;
+                    cout << "Введите новый год рождения: ";
+                    cin >> students[i].birthYear;
                 } else if (strcmp(field, "year") == 0) {
-                    std::cout << "Введите новый год обучения: ";
-                    std::cin >> students[i].year;
+                    cout << "Введите новый год обучения: ";
+                    cin >> students[i].year;
                 } else if (strcmp(field, "group") == 0) {
-                    std::cout << "Введите новую группу: ";
-                    std::cin.ignore();
-                    std::cin.getline(students[i].group, 12);
+                    cout << "Введите новую группу: ";
+                    cin.ignore();
+                    cin.getline(students[i].group, 12);
                 } else if (strcmp(field, "id") == 0) {
-                    std::cout << "Введите новый ID: ";
-                    std::cin.ignore();
-                    std::cin.getline(students[i].id, 20);
+                    cout << "Введите новый ID: ";
+                    cin.ignore();
+                    cin.getline(students[i].id, 20);
                 }
 
                 field = strtok(nullptr, ",");
@@ -332,11 +318,9 @@ void updateStudent() {
             return;
         }
     }
-
-    std::cout << "Студент с указанным ID не найден." << std::endl;
+    cout << "Студент с указанным ID не найден." << endl;
 }
 
-//работает
 void deleteStudent() {
     char stId[20];
     cout << "Введите номер студ.билета";
@@ -370,13 +354,13 @@ void deleteStudent() {
     }
 
 }
-//работает
+
 void checkSize() {
     if (border == sizeof(&students)) {
         changeSize();
     }
 }
-//работает
+
 void changeSize() {
     int length = (border + 1) * 2;
     auto *newStudents = new Student[length];
@@ -390,23 +374,20 @@ void changeSize() {
     delete[] newStudents;
 }
 
-//работает
-//todo: поменять вывод на русский, перенос строки
 void getAllStudents() {
-    // Find max length for each column
     int maxLengths[7] = {sizeof("Name") - 1, sizeof("Surname") - 1, sizeof("Entry Year") - 1, sizeof("Birth Year") - 1,
                          sizeof("Year") - 1, sizeof("Group") - 1, sizeof("Id") - 1};
+
     for (int i = 0; i < border; i++) {
-        if (sizeof(students[i].name) > maxLengths[0]) maxLengths[0] = sizeof(students[i].name);
-        if (sizeof(students[i].surname) > maxLengths[1]) maxLengths[1] = sizeof(students[i].surname);
-        if (sizeof(students[i].entryYear) > maxLengths[2]) maxLengths[2] = sizeof(students[i].entryYear);
-        if (sizeof(students[i].birthYear) > maxLengths[3]) maxLengths[3] = sizeof(students[i].birthYear);
+        if (strlen(students[i].name) > maxLengths[0]) maxLengths[0] = strlen(students[i].name);
+        if (strlen(students[i].surname) > maxLengths[1]) maxLengths[1] = strlen(students[i].surname);
+        if (sizeof(students[i].entryYear) > maxLengths[2])maxLengths[2] = sizeof(students[i].entryYear);
+        if (sizeof(students[i].birthYear) > maxLengths[3])maxLengths[3] = sizeof(students[i].birthYear);
         if (sizeof(students[i].year) > maxLengths[4]) maxLengths[4] = sizeof(students[i].year);
-        if (sizeof(students[i].group) > maxLengths[5]) maxLengths[5] = sizeof(students[i].group);
-        if (sizeof(students[i].id) > maxLengths[6]) maxLengths[6] = sizeof(students[i].id);
+        if (strlen(students[i].group) > maxLengths[5]) maxLengths[5] = strlen(students[i].group);
+        if (strlen(students[i].id) > maxLengths[6]) maxLengths[6] = strlen(students[i].id);
     }
 
-    // Print header row
     cout << "| " << left << setw(maxLengths[0]) << "Name" << " | ";
     cout << left << setw(maxLengths[1]) << "Surname" << " | ";
     cout << left << setw(maxLengths[2]) << "Entry Year" << " | ";
@@ -415,7 +396,6 @@ void getAllStudents() {
     cout << left << setw(maxLengths[5]) << "Group" << " |";
     cout << left << setw(maxLengths[6]) << "Id" << " |\n";
 
-    // Print separator row
     for (int maxLength: maxLengths) {
         cout << "+";
         for (int j = 0; j < maxLength + 2; j++) {
@@ -425,7 +405,6 @@ void getAllStudents() {
     }
     cout << "\n";
 
-    // Print data rows
     for (int i = 0; i < border; i++) {
         cout << "| " << left << setw(maxLengths[0]) << students[i].name << " | ";
         cout << left << setw(maxLengths[1]) << students[i].surname << " | ";
@@ -436,7 +415,6 @@ void getAllStudents() {
         cout << left << setw(maxLengths[6]) << students[i].id << " |\n";
     }
 
-    // Print footer row
     for (int maxLength: maxLengths) {
         cout << "+";
         for (int j = 0; j < maxLength + 2; j++) {
@@ -447,40 +425,31 @@ void getAllStudents() {
     cout << "\n";
 }
 
-//Запрос: Получить фамилии и группы двух самых молодых студентов по возрасту
-// работает
 void request() {
     sortStudentsByAge(0, border - 1, true);
     cout << "Фамилия: " << students[0].surname << ", Год рождения: " << students[0].birthYear << endl;
     cout << "Фамилия: " << students[1].surname << ", Год рождения: " << students[1].birthYear << endl;
 }
 
-//работает
 void showMenu() {
     cout << "Введите номер пункта меню:\n\n";
-    cout << "0. Ввести информацию\n";
     cout << "1. Ввести информацию из существующего текстового файла\n";
     cout << "2. Ввести информацию из существующего двоичного файла\n";
     cout << "3. Отобразить данные\n";
-    cout << "4. Вывести данные в файл\n";
-    cout << "5. Распечатать информацию\n";
-    cout << "6. Преобразовать базу данных в файл\n";
-    cout << "7. Преобразовать содержимое текстового файла в двоичный файл\n";
-    cout << "8. Добавить запись\n";
-    cout << "9. Изменить запись\n";
-    cout << "10. Удалить запись\n";
-    cout << "11. Сортировать по любому полю\n";
-    cout << "12. Выход\n";
-    cout << "13. Запрос\n";
+    cout << "4. Вывести данные в бинарный файл\n";
+    cout << "5. Выгрузить в текстовый файл\n";
+    cout << "6. Преобразовать содержимое текстового файла в двоичный файл\n";
+    cout << "7. Добавить запись\n";
+    cout << "8. Изменить запись\n";
+    cout << "9. Удалить запись\n";
+    cout << "10. Сортировать по любому полю\n";
+    cout << "11. Выход\n";
+    cout << "12. Запрос\n";
     cout << "\n";
 }
 
-//работает
 void menuHandler(short choice) {
     switch (choice) {
-        case 0:
-            cout << "Ввести информацию\n";
-            break;
         case 1:
             cout << "Ввести информацию из существующего текстового файла\n";
             readStudentsFromTextFile();
@@ -494,39 +463,36 @@ void menuHandler(short choice) {
             getAllStudents();
             break;
         case 4:
-            cout << "Вывести данные в бинарный файл\n";
+            cout << "Выгрузить данные в бинарный файл\n";
             writeStudentsToBinaryFile();
             break;
         case 5:
-            cout << "Распечатать информацию\n";
-            break;
-        case 6:
-            cout << "Преобразовать базу данных в текстовый файл\n";
+            cout << "Выгрузить в текстовый файл\n";
             writeStudentsToTextFile();
+        case 6:
+            cout << "Преобразовать содержимое текстового файла в двоичный файл\n";
+            convertTxtToBin();
             break;
         case 7:
-            cout << "Преобразовать содержимое текстового файла в двоичный файл\n";
-            textToBinary();
-            break;
-        case 8:
-            cout << "Добавить запись\n";
+            cout << "Добавить нового студента\n";
             addStudent();
             break;
-        case 9:
+        case 8:
             cout << "Изменить запись\n";
             updateStudent();
             break;
-        case 10:
+        case 9:
             cout << "Удалить запись\n";
             deleteStudent();
             break;
-        case 11:
+        case 10:
             cout << "Сортировать по любому полю\n";
+            printSortMenu();
             break;
-        case 12:
+        case 11:
             cout << "Выход\n";
             exit(0);
-        case 13:
+        case 12:
             cout << "Запрос\n";
             request();
         default:
@@ -536,6 +502,7 @@ void menuHandler(short choice) {
 }
 
 int main() {
+    setlocale(LC_ALL, "");
     while (true) {
         showMenu();
         short choice;

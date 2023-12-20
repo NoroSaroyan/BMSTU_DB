@@ -6,8 +6,8 @@
 #define BMSTU_DB_STUDENT_H
 
 struct Student {
-    char name[30]{};
-    char surname[30]{};
+    char name[300]{};
+    char surname[300]{};
     short entryYear{};
     short birthYear{};
     unsigned short year{};
