@@ -4,6 +4,6 @@ project(BMSTU_DB)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(BMSTU_DB main.cpp
-        Student.cpp
-        Student.h
+        StudentUtils.h
+        op_headers.h
 )
