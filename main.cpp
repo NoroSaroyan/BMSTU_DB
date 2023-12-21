@@ -191,7 +191,7 @@ void addStudent() {
     Student student{};
     while (true) {
         cout << "введите имя" << endl;
-        cin >> setw(30) >> student.name;
+        cin >> setw(40) >> student.name;
         if (cin.fail()) {
             cerr << "Ошибка: неверный формат имени. Попробуйте еще раз.\n";
             cin.clear();
@@ -202,7 +202,7 @@ void addStudent() {
     }
     while (true) {
         cout << "Введите фамилию" << endl;
-        cin >> setw(30) >> student.surname;
+        cin >> setw(40) >> student.surname;
         if (cin.fail()) {
             cerr << "Ошибка: неверный формат фамилии. Попробуйте еще раз.\n";
             cin.clear();
@@ -212,7 +212,7 @@ void addStudent() {
         }
     }
     while (true) {
-        cout << "Введите Ггд рождения" << endl;
+        cout << "Введите Год рождения"<< endl;
         cin >> student.birthYear;
         if (cin.fail() || student.birthYear < 1975 || student.birthYear > 2007) {
             cerr
@@ -261,7 +261,7 @@ void addStudent() {
         cout << "Введите номер студенческого билета" << endl;
         cin >> setw(20) >> student.id;
         if (cin.fail()) {
-            cerr << "Ошибка: неверный формат номера зачетника. Попробуйте еще раз.\n";
+            cerr << "Ошибка: неверный формат номера студенческого билета. Попробуйте еще раз.\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
@@ -275,7 +275,7 @@ void addStudent() {
 
 void updateStudent() {
     char id[20];
-    cout << "Введите ID студента, которого вы хотите обновить: ";
+    cout << "Введите номер студенческого билета студента, данные которого вы хотите обновить: ";
     cin >> id;
 
     for (int i = 0; i < border; ++i) {
@@ -290,27 +290,70 @@ void updateStudent() {
             while (field != nullptr) {
                 if (strcmp(field, "name") == 0) {
                     cout << "Введите новое имя: ";
-                    cin >> students[i].name;
+                    cin >> setw(40) >> students[i].name;
                 } else if (strcmp(field, "surname") == 0) {
                     cout << "Введите новую фамилию: ";
-                    cin >> students[i].surname;
+                    cin >> setw(40) >> students[i].surname;
                 } else if (strcmp(field, "entryYear") == 0) {
-                    cout << "Введите новый год поступления: ";
-                    cin >> students[i].entryYear;
+                    while (true) {
+                        cout << "Введите новый год поступления: ";
+                        cin >> students[i].entryYear;
+                        if (cin.fail() || students[i].entryYear < 2000 || students[i].entryYear > 2023) {
+                            cerr << "Ошибка: неверный формат года поступления. Год должен быть в диапазоне от 2000 до 2023. Попробуйте еще раз.\n";
+                            cin.clear();
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        } else {
+                            break;
+                        }
+                    }
                 } else if (strcmp(field, "birthYear") == 0) {
-                    cout << "Введите новый год рождения: ";
-                    cin >> students[i].birthYear;
+                    while (true) {
+                        cout << "Введите новый год рождения: ";
+                        cin >> students[i].birthYear;
+                        if (cin.fail() || students[i].birthYear < 1975 || students[i].birthYear > 2007) {
+                            cerr << "Ошибка: неверный формат года рождения. Год должен быть в диапазоне от 1975 до 2007. Попробуйте еще раз.\n";
+                            cin.clear();
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        } else {
+                            break;
+                        }
+                    }
                 } else if (strcmp(field, "year") == 0) {
-                    cout << "Введите новый год обучения: ";
-                    cin >> students[i].year;
+                    while (true) {
+                        cout << "Введите новый год обучения: ";
+                        cin >> students[i].year;
+                        if (cin.fail() || students[i].year < 1 || students[i].year > 6) {
+                            cerr << "Ошибка: неверный формат курса. Курс должен быть в диапазоне от 1 до 6. Попробуйте еще раз.\n";
+                            cin.clear();
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        } else {
+                            break;
+                        }
+                    }
                 } else if (strcmp(field, "group") == 0) {
-                    cout << "Введите новую группу: ";
-                    cin.ignore();
-                    cin.getline(students[i].group, 12);
+                    while (true) {
+                        cout << "Введите новую группу: ";
+                        cin >> setw(12) >> students[i].group;
+                        if (cin.fail()) {
+                            cerr << "Ошибка: неверный формат группы. Попробуйте еще раз.\n";
+                            cin.clear();
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        } else {
+                            break;
+                        }
+                    }
                 } else if (strcmp(field, "id") == 0) {
-                    cout << "Введите новый ID: ";
-                    cin.ignore();
-                    cin.getline(students[i].id, 20);
+                    while (true) {
+                        cout << "Введите новый ID: ";
+                        cin >> setw(20) >> students[i].id;
+                        if (cin.fail()) {
+                            cerr << "Ошибка: неверный формат номера студенческого билета. Попробуйте еще раз.\n";
+                            cin.clear();
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        } else {
+                            break;
+                        }
+                    }
                 }
 
                 field = strtok(nullptr, ",");
